@@ -1,4 +1,4 @@
-package youghz.darts.cricket
+package youghz.dartscricket
 
 import io.flutter.embedding.android.FlutterActivity
 
