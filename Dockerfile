@@ -1,34 +1,19 @@
-# Install Operating system and dependencies
-FROM ubuntu:20.04
+# Use the specified Flutter image as the base image
+FROM ghcr.io/cirruslabs/flutter:3.24.1 as build
 
-ENV DEBIAN_FRONTEND=noninteractive
+# Set the working directory inside the container
+WORKDIR /app
 
-RUN apt-get update 
-RUN apt-get install -y curl git wget unzip libgconf-2-4 gdb libstdc++6 libglu1-mesa fonts-droid-fallback lib32stdc++6 python3
-RUN apt-get clean
+# Copy the pubspec.yaml and pubspec.lock files to the container, and get dependencies
+COPY pubspec.* ./
+RUN flutter pub get
 
-# download Flutter SDK from Flutter Github repo
-RUN git clone https://github.com/flutter/flutter.git /usr/local/flutter
+# Copy the entire project to the container
+COPY . .
 
-# Set flutter environment path
-ENV PATH="/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:${PATH}"
+# Build the web version of the Flutter app
+RUN flutter build web
 
-# Run flutter doctor
-RUN flutter doctor
-
-# Enable flutter web
-RUN flutter channel master
-RUN flutter upgrade
-RUN flutter config --enable-web
-
-# Run flutter doctor
-RUN flutter doctor
-
-# Copy files to container and build
-RUN mkdir /app/
-COPY . /app/
-WORKDIR /app/
-RUN flutter run
-
-# Record the exposed port
-EXPOSE 5000
+# Use Nginx as the server to serve the built Flutter web app
+FROM nginx:alpine
+COPY --from=build /app/build/web /usr/share/nginx/html
