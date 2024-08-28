@@ -21,6 +21,9 @@ RUN flutter channel master
 RUN flutter upgrade
 RUN flutter config --enable-web
 
+# Run flutter doctor
+RUN flutter doctor
+
 # Copy files to container and build
 RUN mkdir /app/
 COPY . /app/
